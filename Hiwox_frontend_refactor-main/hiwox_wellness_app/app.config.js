@@ -6,7 +6,7 @@ module.exports = ({ config }) => ({
       process.env.EXPO_PUBLIC_API_BASE_URL ||
       process.env.API_BASE_URL ||
       config.extra?.apiBaseUrl ||
-      "https://dev-api.hiwox.com/api",
+      "https://hiwox.dedyn.io/api",
     apiTimeout: process.env.API_TIMEOUT || config.extra?.apiTimeout || "30000",
     logLevel: process.env.LOG_LEVEL || config.extra?.logLevel || "debug",
     buildEnv: process.env.BUILD_ENV || config.extra?.buildEnv || "development",

@@ -10,7 +10,7 @@ const readExtra = (key: string): string | undefined => {
 };
 
 export const config = {
-  API_BASE_URL: readExtra("apiBaseUrl") || "https://dev-api.hiwox.com/api",
+  API_BASE_URL: readExtra("apiBaseUrl") || "https://hiwox.dedyn.io/api",
   API_TIMEOUT: parseInt(readExtra("apiTimeout") || "30000", 10),
   LOG_LEVEL: (readExtra("logLevel") || "debug") as
     | "debug"
