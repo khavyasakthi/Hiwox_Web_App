@@ -73,7 +73,14 @@ export const authService = {
 
   async register(payload: RegisterRequest): Promise<RegisterResponse> {
     try {
-      const body = asAuthPayload(await apiClient.post("/auth/register", payload));
+      const apiPayload = {
+        name: payload.name,
+        email: payload.email,
+        password: payload.password,
+        ...(payload.age !== undefined && { age: payload.age }),
+        ...(payload.phone && { phone: payload.phone }),
+      };
+      const body = asAuthPayload(await apiClient.post("/auth/register", apiPayload));
       const responsePayload = getAuthPayload(body);
       const token = responsePayload.accessToken ?? responsePayload.token;
 
