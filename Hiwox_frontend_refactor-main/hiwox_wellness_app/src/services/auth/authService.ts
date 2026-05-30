@@ -1,20 +1,59 @@
 import { apiClient } from "@/services/api/client";
 import { tokenManager } from "./tokenManager";
 import { logger } from "@/config/logger";
-import type { LoginResponse, RegisterRequest, RegisterResponse } from "@/types/auth";
+import type { LoginResponse, RegisterRequest, RegisterResponse, User } from "@/types/auth";
+
+type AuthPayload = Partial<User> & {
+  _id?: string;
+  userId?: string;
+  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  user?: AuthPayload;
+  data?: AuthPayload;
+  success?: boolean;
+  message?: string;
+};
+
+const asAuthPayload = (value: unknown): AuthPayload =>
+  value && typeof value === "object" ? (value as AuthPayload) : {};
+
+const isUserRole = (value: unknown): value is User["role"] =>
+  value === "user" || value === "consultant" || value === "admin" || value === "superadmin";
+
+const normalizeUser = (payload: AuthPayload): User => {
+  const user = asAuthPayload(payload.user ?? payload);
+  const role = isUserRole(user.role) ? user.role : "user";
+
+  return {
+    id: user.id ?? user.userId ?? user._id ?? payload.userId ?? "",
+    email: user.email ?? payload.email ?? "",
+    name: user.name ?? payload.name ?? "",
+    role,
+    age: user.age ?? payload.age,
+    phone: user.phone ?? payload.phone,
+  };
+};
+
+const getAuthPayload = (body: AuthPayload): AuthPayload =>
+  body.success && body.data ? asAuthPayload(body.data) : body;
 
 export const authService = {
   async login(identifier: string, password: string): Promise<LoginResponse> {
     try {
       // Response interceptor unwraps axios response → body is { success, data, message }
-      const body = await apiClient.post("/auth/login", { identifier, password });
+      const body = asAuthPayload(await apiClient.post("/auth/login", { identifier, password }));
+      const payload = getAuthPayload(body);
+      const token = payload.accessToken ?? payload.token;
 
-      if (body.success && body.data) {
-        await tokenManager.saveTokens(body.data.accessToken, body.data.refreshToken);
-        return { success: true, data: body.data.user };
+      if (body.success === true || token) {
+        if (token) {
+          await tokenManager.saveTokens(token, payload.refreshToken ?? "");
+        }
+        return { success: true, data: normalizeUser(payload) };
       }
 
-      return { success: false, message: body.message };
+      return { success: false, message: body.message ?? "Login failed" };
     } catch (error) {
       logger.error("Login error:", error);
       return { success: false, message: "Network error occurred" };
@@ -23,16 +62,18 @@ export const authService = {
 
   async register(payload: RegisterRequest): Promise<RegisterResponse> {
     try {
-      const body = await apiClient.post("/auth/register", payload);
+      const body = asAuthPayload(await apiClient.post("/auth/register", payload));
+      const responsePayload = getAuthPayload(body);
+      const token = responsePayload.accessToken ?? responsePayload.token;
 
-      if (body.success && body.data) {
-        if (body.data.token) {
-          await tokenManager.saveTokens(body.data.token, "");
+      if (body.success === true || token) {
+        if (token) {
+          await tokenManager.saveTokens(token, responsePayload.refreshToken ?? "");
         }
-        return { success: true, data: body.data };
+        return { success: true, data: normalizeUser(responsePayload) };
       }
 
-      return { success: false, message: body.message };
+      return { success: false, message: body.message ?? "Registration failed" };
     } catch (error) {
       logger.error("Register error:", error);
       return { success: false, message: "Network error occurred" };
