@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useRootNavigationState, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useAuthStore } from "@/store/slices/authStore";
 import { tokenManager } from "@/services/auth/tokenManager";
-import { Loading } from "@/components/ui/Loading/Loading";
 
 function AuthGuard() {
   const router = useRouter();
   const segments = useSegments();
+  const rootNavigationState = useRootNavigationState();
   const { isAuthenticated, isLoading, setAuthenticated, setLoading } = useAuthStore();
 
   useEffect(() => {
@@ -21,7 +21,7 @@ function AuthGuard() {
   }, [setAuthenticated, setLoading]);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (!rootNavigationState?.key || isLoading) return;
 
     const inAuth = segments[0] === "(auth)";
 
@@ -30,23 +30,17 @@ function AuthGuard() {
     } else if (isAuthenticated && inAuth) {
       router.replace("/(main)/home");
     }
-  }, [isAuthenticated, isLoading, segments, router]);
+  }, [isAuthenticated, isLoading, rootNavigationState?.key, segments, router]);
 
   return null;
 }
 
 export default function RootLayout() {
-  const { isLoading } = useAuthStore();
-
-  if (isLoading) {
-    return <Loading message="Loading..." />;
-  }
-
   return (
     <>
       <StatusBar style="light" />
-      <AuthGuard />
       <Stack screenOptions={{ headerShown: false }} />
+      <AuthGuard />
     </>
   );
 }
