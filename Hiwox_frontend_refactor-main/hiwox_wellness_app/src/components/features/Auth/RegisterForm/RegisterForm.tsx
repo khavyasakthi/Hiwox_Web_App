@@ -21,7 +21,7 @@ type Role = "user" | "consultant";
 
 export const RegisterForm: React.FC = () => {
   const router = useRouter();
-  const { register, isLoading } = useAuth();
+  const { register, isLoading, error: authError } = useAuth();
   const { toast, showToast, hideToast } = useToast();
 
   const [name, setName] = useState("");
@@ -62,7 +62,7 @@ export const RegisterForm: React.FC = () => {
     });
 
     if (!success) {
-      showToast("Registration failed. Please try again.", "error");
+      showToast(authError ?? "Registration failed. Please try again.", "error");
     }
   };
 

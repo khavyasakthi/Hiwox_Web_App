@@ -2,6 +2,17 @@ import { apiClient } from "@/services/api/client";
 import { tokenManager } from "./tokenManager";
 import { logger } from "@/config/logger";
 import type { LoginResponse, RegisterRequest, RegisterResponse, User } from "@/types/auth";
+import { AxiosError } from "axios";
+
+const getNetworkErrorMessage = (error: unknown): string => {
+  if (error instanceof AxiosError) {
+    if (!error.response) {
+      return "Unable to connect to server. Please check your internet connection.";
+    }
+    return error.response.data?.message ?? error.message ?? "Server error occurred";
+  }
+  return "An unexpected error occurred";
+};
 
 type AuthPayload = Partial<User> & {
   _id?: string;
@@ -56,7 +67,7 @@ export const authService = {
       return { success: false, message: body.message ?? "Login failed" };
     } catch (error) {
       logger.error("Login error:", error);
-      return { success: false, message: "Network error occurred" };
+      return { success: false, message: getNetworkErrorMessage(error) };
     }
   },
 
@@ -76,7 +87,7 @@ export const authService = {
       return { success: false, message: body.message ?? "Registration failed" };
     } catch (error) {
       logger.error("Register error:", error);
-      return { success: false, message: "Network error occurred" };
+      return { success: false, message: getNetworkErrorMessage(error) };
     }
   },
 
