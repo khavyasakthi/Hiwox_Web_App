@@ -1,7 +1,10 @@
 // src/config/env.ts
 
 export const config = {
-  API_BASE_URL: process.env.API_BASE_URL || "https://dev-api.hiwox.com/api",
+  API_BASE_URL:
+    process.env.EXPO_PUBLIC_API_BASE_URL ||
+    process.env.API_BASE_URL ||
+    "https://dev-api.hiwox.com/api",
   API_TIMEOUT: parseInt(process.env.API_TIMEOUT || "30000", 10),
   LOG_LEVEL: (process.env.LOG_LEVEL || "debug") as
     | "debug"

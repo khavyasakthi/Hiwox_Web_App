@@ -1,5 +1,5 @@
-import * as SecureStore from "expo-secure-store";
 import { logger } from "@/config/logger";
+import { secureStorage } from "@/services/storage/secureStorage";
 
 const KEYS = {
   ACCESS: "accessToken",
@@ -9,9 +9,9 @@ const KEYS = {
 export const tokenManager = {
   async saveTokens(accessToken: string, refreshToken: string): Promise<void> {
     try {
-      await SecureStore.setItemAsync(KEYS.ACCESS, accessToken);
+      await secureStorage.setItem(KEYS.ACCESS, accessToken);
       if (refreshToken) {
-        await SecureStore.setItemAsync(KEYS.REFRESH, refreshToken);
+        await secureStorage.setItem(KEYS.REFRESH, refreshToken);
       }
     } catch (error) {
       logger.error("Error saving tokens:", error);
@@ -20,7 +20,7 @@ export const tokenManager = {
 
   async getAccessToken(): Promise<string | null> {
     try {
-      return await SecureStore.getItemAsync(KEYS.ACCESS);
+      return await secureStorage.getItem(KEYS.ACCESS);
     } catch (error) {
       logger.error("Error getting access token:", error);
       return null;
@@ -29,7 +29,7 @@ export const tokenManager = {
 
   async getRefreshToken(): Promise<string | null> {
     try {
-      return await SecureStore.getItemAsync(KEYS.REFRESH);
+      return await secureStorage.getItem(KEYS.REFRESH);
     } catch (error) {
       logger.error("Error getting refresh token:", error);
       return null;
@@ -38,8 +38,8 @@ export const tokenManager = {
 
   async clearTokens(): Promise<void> {
     try {
-      await SecureStore.deleteItemAsync(KEYS.ACCESS);
-      await SecureStore.deleteItemAsync(KEYS.REFRESH);
+      await secureStorage.removeItem(KEYS.ACCESS);
+      await secureStorage.removeItem(KEYS.REFRESH);
     } catch (error) {
       logger.error("Error clearing tokens:", error);
     }

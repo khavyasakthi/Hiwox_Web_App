@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, View, Text } from "react-native";
+import { Animated, Platform, View, Text } from "react-native";
 import { styles } from "./Toast.styles"; // Ensure Toast.styles.ts exists in this folder
 
 interface ToastProps {
@@ -18,6 +18,7 @@ export const Toast: React.FC<ToastProps> = ({
   // Use useRef for animated values to keep them stable
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(-100)).current;
+  const useNativeDriver = Platform.OS !== "web";
 
   useEffect(() => {
     // 1. Correctly type the timer to avoid 'Cannot find namespace NodeJS'
@@ -29,12 +30,12 @@ export const Toast: React.FC<ToastProps> = ({
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 300,
-          useNativeDriver: true,
+          useNativeDriver,
         }),
         Animated.timing(slideAnim, {
           toValue: 0,
           duration: 300,
-          useNativeDriver: true,
+          useNativeDriver,
         }),
       ]).start();
 
@@ -44,12 +45,12 @@ export const Toast: React.FC<ToastProps> = ({
           Animated.timing(fadeAnim, {
             toValue: 0,
             duration: 300,
-            useNativeDriver: true,
+            useNativeDriver,
           }),
           Animated.timing(slideAnim, {
             toValue: -100,
             duration: 300,
-            useNativeDriver: true,
+            useNativeDriver,
           }),
         ]).start(() => onHide());
       }, 3000);
@@ -59,7 +60,7 @@ export const Toast: React.FC<ToastProps> = ({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [visible, fadeAnim, slideAnim, onHide]);
+  }, [visible, fadeAnim, slideAnim, onHide, useNativeDriver]);
 
   if (!visible) return null;
 
