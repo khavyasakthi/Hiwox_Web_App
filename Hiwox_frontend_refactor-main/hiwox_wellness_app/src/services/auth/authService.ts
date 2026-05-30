@@ -79,6 +79,8 @@ export const authService = {
         password: payload.password,
         ...(payload.age !== undefined && { age: payload.age }),
         ...(payload.phone && { phone: payload.phone }),
+        consent: payload.consent,
+        privacyNoticeAccepted: payload.privacyNoticeAccepted,
       };
       const body = asAuthPayload(await apiClient.post("/auth/register", apiPayload));
       const responsePayload = getAuthPayload(body);
